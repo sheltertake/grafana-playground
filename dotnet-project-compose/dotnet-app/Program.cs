@@ -4,6 +4,11 @@ using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpClient("backend", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["BACKEND_URL"] ?? "http://backend:8080");
+});
+
 // OpenTelemetry — legge OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_SERVICE_NAME dagli env var
 builder.Services.AddOpenTelemetry()
     .WithTracing(t => t
@@ -54,6 +59,26 @@ app.MapGet("/slow", async (ILogger<Program> logger) =>
     logger.LogInformation("Slow endpoint called, waiting {DelayMs}ms", delay);
     await Task.Delay(delay);
     return Results.Ok(new { message = "done", delayMs = delay });
+});
+
+app.MapGet("/chain", async (IHttpClientFactory factory, ILogger<Program> logger) =>
+{
+    logger.LogInformation("Chain request started, calling backend");
+    var client = factory.CreateClient("backend");
+
+    var data = await client.GetStringAsync("/data");
+    logger.LogInformation("Chain request completed");
+
+    return Results.Ok(new { source = "dotnet-app", backend = data });
+});
+
+app.MapGet("/chain/slow", async (IHttpClientFactory factory, ILogger<Program> logger) =>
+{
+    logger.LogInformation("Chain slow request started");
+    var client = factory.CreateClient("backend");
+
+    var data = await client.GetStringAsync("/slow-data");
+    return Results.Ok(new { source = "dotnet-app", backend = data });
 });
 
 app.MapGet("/error", (ILogger<Program> logger) =>

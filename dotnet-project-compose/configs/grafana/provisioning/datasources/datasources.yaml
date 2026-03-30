@@ -20,6 +20,12 @@ datasources:
       tracesToLogsV2:
         datasourceUid: loki
         filterByTraceID: true
+        filterBySpanID: false
+        spanStartTimeShift: '-1m'
+        spanEndTimeShift: '1m'
+        tags:
+          - key: service.name
+            value: service_name
       tracesToMetrics:
         datasourceUid: prometheus
       serviceMap:

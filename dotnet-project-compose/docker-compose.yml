@@ -59,5 +59,16 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
       - OTEL_SERVICE_NAME=dotnet-app
+      - BACKEND_URL=http://backend:8080
+    depends_on:
+      - otel-collector
+      - backend
+
+  backend:
+    build: ./backend
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_SERVICE_NAME=backend
     depends_on:
       - otel-collector
