@@ -1,2 +1,2 @@
 # grafana-playground
-test
+test2
