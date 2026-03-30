@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose:*)",
+      "Bash(curl -s \"http://localhost:3100/loki/api/v1/query_range?query=%7Bservice_name%3D%22dotnet-app%22%7D&limit=5\")",
+      "Bash(curl -s \"http://localhost:3100/loki/api/v1/label/service_name/values\")",
+      "Bash(curl -s \"http://localhost:3100/loki/api/v1/label/source/values\")",
+      "Bash(curl -s \"http://localhost:3200/api/search\")",
+      "Bash(/dev/null echo:*)",
+      "Bash(curl -s http://localhost:3100/loki/api/v1/labels echo '=== LOKI SERVICE NAMES ===')",
+      "Bash(curl -s http://localhost:3100/loki/api/v1/label/service_name/values echo '=== LOKI SOURCE LABELS \\(FARO\\) ===')",
+      "Bash(curl -s http://localhost:3100/loki/api/v1/label/source/values)",
+      "Bash(grep -r FetchCustomAttributeFunction /home/max/grafana-playground/03-dotnet-faro-compose/spa/node_modules/@opentelemetry/instrumentation-fetch/build/src/ --include=*.d.ts)"
+    ]
+  }
+}

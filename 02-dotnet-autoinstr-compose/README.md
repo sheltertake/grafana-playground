@@ -4,7 +4,7 @@ A Docker Compose playground for observability with the **Grafana LGTM stack** (L
 
 The key characteristic of this project: the application code contains **zero OpenTelemetry references**. No NuGet packages, no `AddOpenTelemetry()` calls, no exporters configured in code. The CLR profiler and startup hook inject all instrumentation at runtime, entirely from the Dockerfile and environment variables.
 
-This project is the "zero-code" counterpart to [`dotnet-project-compose`](../dotnet-project-compose/README.md), which achieves the same result using the OpenTelemetry SDK packages explicitly.
+This project is the "zero-code" counterpart to [`dotnet-project-compose`](.../01-dotnet-project-compose/README.md), which achieves the same result using the OpenTelemetry SDK packages explicitly.
 
 ---
 

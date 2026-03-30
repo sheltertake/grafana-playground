@@ -2,15 +2,13 @@
 
 A collection of Docker Compose projects for exploring observability with the **Grafana LGTM stack** (Loki, Grafana, Tempo, Prometheus) and **.NET 10 microservices**.
 
-Each project spins up a complete, self-contained observability environment — Grafana pre-configured with all datasources, an OpenTelemetry Collector as the central telemetry hub, and two communicating .NET services that generate traces, metrics, and logs.
-
-The two projects are functionally identical from an observability standpoint. They differ only in **how instrumentation is added to the .NET applications**, making them useful for comparing the two main approaches side by side.
+Each project spins up a complete, self-contained observability environment — Grafana pre-configured with all datasources, an OpenTelemetry Collector as the central telemetry hub, and communicating .NET services that generate traces, metrics, and logs.
 
 ---
 
 ## Projects
 
-### [dotnet-project-compose](./dotnet-project-compose/README.md)
+### [01-dotnet-project-compose](./01-dotnet-project-compose/README.md)
 
 Instrumentation via **OpenTelemetry SDK NuGet packages**. The applications explicitly configure the OTel SDK in `Program.cs` using `AddOpenTelemetry()`, with instrumentation libraries for ASP.NET Core, HttpClient, and the .NET runtime.
 
@@ -19,13 +17,13 @@ Instrumentation via **OpenTelemetry SDK NuGet packages**. The applications expli
 - Requires modifying application source code
 
 ```bash
-cd dotnet-project-compose
+cd 01-dotnet-project-compose
 docker compose up --build
 ```
 
 ---
 
-### [dotnet-autoinstr-compose](./dotnet-autoinstr-compose/README.md)
+### [02-dotnet-autoinstr-compose](./02-dotnet-autoinstr-compose/README.md)
 
 Instrumentation via the **OpenTelemetry .NET Auto-Instrumentation agent**. The applications contain zero OpenTelemetry code — no packages, no setup. The CLR profiler and startup hook are injected at the Docker image layer and activated via environment variables.
 
@@ -34,7 +32,22 @@ Instrumentation via the **OpenTelemetry .NET Auto-Instrumentation agent**. The a
 - Useful for instrumenting apps you cannot or do not want to modify
 
 ```bash
-cd dotnet-autoinstr-compose
+cd 02-dotnet-autoinstr-compose
+docker compose up --build
+```
+
+---
+
+### [03-dotnet-faro-compose](./03-dotnet-faro-compose/README.md)
+
+Adds a **React/Vite/TypeScript SPA** to the stack, instrumented with **Grafana Faro**. Captures browser-side telemetry (Web Vitals, JS errors, fetch traces) and connects it to the backend traces via W3C `traceparent` header propagation — giving a single end-to-end trace from browser click to backend span.
+
+- Frontend observability with Grafana Faro SDK
+- **Grafana Alloy** as the Faro receiver (browser → Alloy → Loki/Tempo)
+- End-to-end distributed traces: browser → dotnet-app → backend
+
+```bash
+cd 03-dotnet-faro-compose
 docker compose up --build
 ```
 
@@ -42,27 +55,28 @@ docker compose up --build
 
 ## Stack overview
 
-Both projects share the same infrastructure:
-
 | Component | Role |
 |-----------|------|
 | **Grafana** | UI — Explore, dashboards, datasource links |
 | **Tempo** | Distributed trace storage and query |
 | **Loki** | Log aggregation and query |
 | **Prometheus** | Metrics storage and query |
-| **OpenTelemetry Collector** | Receives OTLP from apps, routes to Tempo / Loki / Prometheus |
+| **OpenTelemetry Collector** | Receives OTLP from .NET apps, routes to Tempo / Loki / Prometheus |
+| **Grafana Alloy** *(03 only)* | Receives Faro pushes from the browser, routes to Loki / OTel Collector |
 
-Grafana is pre-provisioned with all three datasources and cross-signal navigation:
-- **Trace → Logs**: jump from a Tempo span directly to Loki logs filtered by `traceId`
+Grafana is pre-provisioned with all datasources and cross-signal navigation:
+- **Trace → Logs**: jump from a Tempo span to Loki logs filtered by `traceId`
 - **Trace → Metrics**: link spans to Prometheus RED metrics
 - **Service Map**: visualize service dependencies via Tempo's span metrics
 
-## Approach comparison
+---
 
-| | dotnet-project-compose | dotnet-autoinstr-compose |
-|---|---|---|
-| OTel setup | `Program.cs` | Dockerfile + env vars |
-| NuGet packages | Yes | None |
-| Code changes required | Yes | No |
-| Custom spans/metrics | Full SDK | `ActivitySource` + `OTEL_DOTNET_AUTO_TRACES_ADDITIONAL_SOURCES` |
-| Good for | New services, full control | Legacy apps, zero-touch instrumentation |
+## Comparison
+
+| | 01 SDK | 02 Auto-Instrumentation | 03 Faro |
+|---|---|---|---|
+| Backend instrumentation | NuGet SDK | CLR agent | NuGet SDK |
+| Frontend instrumentation | — | — | Grafana Faro |
+| Code changes required | Yes | No | Yes (faro.ts) |
+| End-to-end browser traces | No | No | Yes |
+| Extra infrastructure | — | — | Grafana Alloy |

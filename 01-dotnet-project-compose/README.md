@@ -2,7 +2,7 @@
 
 A Docker Compose playground for observability with the **Grafana LGTM stack** (Loki, Grafana, Tempo, Mimir/Prometheus) and two **.NET 10 microservices instrumented manually** using the OpenTelemetry SDK NuGet packages.
 
-This project is the "explicit" counterpart to [`dotnet-autoinstr-compose`](../dotnet-autoinstr-compose/README.md), which achieves the same result without any OpenTelemetry code in the application.
+This project is the "explicit" counterpart to [`dotnet-autoinstr-compose`](.../02-dotnet-autoinstr-compose/README.md), which achieves the same result without any OpenTelemetry code in the application.
 
 ---
 
